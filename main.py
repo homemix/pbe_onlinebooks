@@ -1,4 +1,5 @@
-from utils import connect_to_db
+from utils import connect_to_db, insert_into_books, read_csv_generator
+
 
 def main():
     pass
@@ -22,5 +23,28 @@ def fetch_data():
     finally:
         conn.close()
 
+
+def load_book_data(file_path):
+    query = """
+            INSERT INTO books (title, language, price, genre)
+            VALUES (%s, %s, %s, %s) \
+            """
+
+    conn = connect_to_db()
+    if conn is None:
+        return
+    try:
+        for row in read_csv_generator(file_path):
+            data = (row['Title'], row['Language'], row['Price'], row['Genre'])
+            insert_into_books(conn, query, data)
+        conn.commit()
+        print("Books data inserted successfully.")
+    except Exception as e:
+        print(f"Error during data load: {e}")
+        conn.rollback()
+    finally:
+        conn.close()
+
 if __name__ == "__main__":
-    main()
+    books_data = './data/books.csv'
+    load_book_data(books_data)
