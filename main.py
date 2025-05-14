@@ -45,6 +45,31 @@ def load_book_data(file_path):
     finally:
         conn.close()
 
+def load_customers_data(file_path):
+    query = """
+            INSERT INTO customers(
+	 customername, email, preferredlanguage, loyaltypoints, membershiplevel)
+	VALUES ( %s, %s, %s, %s, %s)\
+            """
+
+    conn = connect_to_db()
+    if conn is None:
+        return
+    try:
+        for row in read_csv_generator(file_path):
+            data = (row['CustomerName'], row['Email'], row['PreferredLanguage'], row['LoyaltyPoints'], row['MembershipLevel'])
+            insert_into_books(conn, query, data)
+        conn.commit()
+        print("Customers data inserted successfully.")
+    except Exception as e:
+        print(f"Error during data load: {e}")
+        conn.rollback()
+    finally:
+        conn.close()
+
 if __name__ == "__main__":
-    books_data = './data/books.csv'
-    load_book_data(books_data)
+    # books_data = './data/books.csv'
+    # load_book_data(books_data)
+
+    customers_data = './data/customers.csv'
+    load_customers_data(customers_data)
